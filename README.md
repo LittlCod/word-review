@@ -1,5 +1,11 @@
-# Vue 3 + Vite
+# 单词复习自动生成器
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+可以每天背完后把单词添加进来，自动生成复习日期，会存在localstorage里。
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
+因为复习计划结束的单词会直接删掉，所以不用担心存不下。
+
+每天会有复习的单词和接下来5天要复习的单词。
+
+可以导出和导入当前存的单词的JSON。
+
+自己写来自己用用而已，挺简单的。
