@@ -136,29 +136,28 @@ function markReviewResult(word, isCorrect) {
     if (!w) return
 
     if (isCorrect) {
-        if (w.reviewPlan.length === 0) {
+        if (w.plan.length === 0) {
             // 如果空，说明是复习失败重来的，重新生成计划
-            const today = dayjs().format('YYYY-MM-DD')
             const reviewDates = [1, 2, 4, 7, 15, 30].map(d =>
                 dayjs().add(d, 'day').format('YYYY-MM-DD')
             )
-            w.reviewPlan = [today, ...reviewDates]
+            w.plan = [...reviewDates]
         } else {
             // 删除已完成的这次复习
-            w.reviewPlan.shift()
+            w.plan.shift()
         }
 
         // 更新下次复习日期
-        w.nextDate = w.reviewPlan[0] || null
-        if (!w.nextDate) {
+        w.nextReview = w.plan[0] || null
+        if (!w.nextReview) {
             // 全部复习完成，移除单词
             const index = storedWords.findIndex(wd => wd.word === word.word)
             storedWords.splice(index, 1)
         }
     } else {
         // 复习失败，清空计划并推迟到明天
-        w.reviewPlan = []
-        w.nextDate = dayjs().add(1, 'day').format('YYYY-MM-DD')
+        w.plan = []
+        w.nextReview = dayjs().add(1, 'day').format('YYYY-MM-DD')
     }
 
     localStorage.setItem('vocab_words', JSON.stringify(storedWords))
@@ -244,7 +243,6 @@ h2 {
 }
 
 .card {
-    cursor: pointer;
     text-align: center;
     padding: 20px;
     border-radius: 16px;
