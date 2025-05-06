@@ -1,6 +1,6 @@
 <template>
     <div class="container">
-        <h1>日语单词背诵表</h1>
+        <h1>单词背诵表</h1>
 
         <!-- 添加新单词 -->
         <el-form :model="newWord" label-width="100px" class="form">
