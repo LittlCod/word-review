@@ -10,6 +10,9 @@
             <el-form-item label="中文意思">
                 <el-input v-model="newWord.meaning" />
             </el-form-item>
+            <el-form-item label="背诵日期">
+                <el-date-picker v-model="newWord.date" type="date" placeholder="选择背诵日期" />
+            </el-form-item>   
             <el-form-item label="首次是否正确">
                 <el-switch v-model="newWord.firstCorrect" />
             </el-form-item>
@@ -38,7 +41,7 @@
 
 
         <!-- 今日复习部分 -->
-        <h2>今天要复习的单词</h2>
+        <h2>今天要复习的单词 ({{ todayWords.length }}个)</h2>
         <el-button type="primary" @click="showMemorize = true" style="margin-bottom: 16px;">开始默写</el-button>
         <div class="grid">
             <div class="card" v-for="(word, index) in todayWords" :key="index">
@@ -54,10 +57,10 @@
         </div>
 
         <!-- 未来五天复习单词 -->
-        <h2>接下来5天要复习的单词</h2>
+        <h2>接下来5天预计要复习的单词</h2>
         <ul class="upcoming-list">
             <li class="upcoming-card" v-for="(item, index) in upcomingWords" :key="index">
-                {{ item.date }}：{{item.words.map(w => w.word).join(', ')}}
+                {{ item.date }} ({{ item.words.length }}个)：{{item.words.map(w => w.word).join(', ')}}
             </li>
         </ul>
     </div>
@@ -70,6 +73,7 @@ import dayjs from 'dayjs'
 
 const newWord = reactive({
     word: '',
+    date: dayjs().format('YYYY-MM-DD'),
     meaning: '',
     firstCorrect: true
 })
@@ -95,7 +99,7 @@ function generatePlan(baseDate) {
 
 // 添加新单词
 function addWord() {
-    const today = dayjs().format('YYYY-MM-DD')
+    const today = newWord.date
     const plan = newWord.firstCorrect ? generatePlan(today) : []
     const nextReview = newWord.firstCorrect
         ? plan[0]
@@ -108,7 +112,7 @@ function addWord() {
     })
     saveWords()
     // 重置表单
-    Object.assign(newWord, { word: '', meaning: '', firstCorrect: true })
+    Object.assign(newWord, { word: '', meaning: '', firstCorrect: true, date: dayjs().format('YYYY-MM-DD') })
 }
 
 // 今天要复习的单词
@@ -243,11 +247,13 @@ h2 {
 }
 
 .card {
+    position: relative;
     text-align: center;
     padding: 20px;
     border-radius: 16px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     transition: transform 0.2s, background-color 0.2s;
+    height: 120px;
 }
 
 .card:hover {
@@ -313,7 +319,9 @@ h2 {
 }
 
 .review-buttons {
-    margin-top: 10px;
+    position: absolute;
+    width: 170px;
+    bottom: 16px;
     display: flex;
     justify-content: center;
     gap: 10px;
