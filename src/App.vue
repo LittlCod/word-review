@@ -12,11 +12,13 @@
             </el-form-item>
             <el-form-item label="背诵日期">
                 <el-date-picker v-model="newWord.date" type="date" placeholder="选择背诵日期" />
-            </el-form-item>   
+            </el-form-item>
             <el-form-item label="首次是否正确">
                 <el-switch v-model="newWord.firstCorrect" />
             </el-form-item>
             <el-button type="primary" @click="addWord">添加</el-button>
+            <el-button type="primary" @click="changeAllFn(1)">顺延1天</el-button>
+            <el-button type="primary" @click="changeAllFn(-1)">提前1天</el-button>
             <el-button @click="exportJson" style="margin-left: 12px;">导出JSON</el-button>
             <el-button @click="uploadJson" style="margin-left: 12px;">导入JSON</el-button>
             <input type="file" ref="fileInput" accept=".json" @change="handleFile" style="display: none;" />
@@ -43,8 +45,11 @@
         <!-- 今日复习部分 -->
         <h2>今天要复习的单词 ({{ todayWords.length }}个)</h2>
         <el-button type="primary" @click="showMemorize = true" style="margin-bottom: 16px;">开始默写</el-button>
+        <el-button type="success" @click="allRightFn" style="margin-bottom: 16px;">剩下的单词全部正确</el-button>
         <div class="grid">
-            <div class="card" v-for="(word, index) in todayWords" :key="index">
+            <div class="card" :class="{
+                wrong: word.plan.length === 0 && word.nextReview === dayjs().add(1, 'day').format('YYYY-MM-DD'),
+            }" v-for="(word, index) in todayWords" :key="index">
                 <strong>{{ word.word }}</strong>
                 <div>{{ word.meaning }}</div>
 
@@ -103,7 +108,7 @@ function addWord() {
     const plan = newWord.firstCorrect ? generatePlan(today) : []
     const nextReview = newWord.firstCorrect
         ? plan[0]
-        : dayjs().add(1, 'day').format('YYYY-MM-DD')
+        : newWord.date.add(1, 'day').format('YYYY-MM-DD')
     words.value.push({
         word: newWord.word,
         meaning: newWord.meaning,
@@ -118,7 +123,10 @@ function addWord() {
 // 今天要复习的单词
 const todayWords = computed(() => {
     const today = dayjs().format('YYYY-MM-DD')
-    return words.value.filter(w => w.nextReview === today)
+    return words.value.filter(w =>
+        (w.nextReview === today) ||
+        (w.plan.length === 0 && w.nextReview === dayjs().add(1, 'day').format('YYYY-MM-DD'))
+    )
 })
 
 // 计算未来5天的单词计划
@@ -177,7 +185,8 @@ function exportJson() {
 
     const a = document.createElement('a')
     a.href = url
-    a.download = 'vocab_words.json'
+    // 添加时间
+    a.download = `words_export(${dayjs().format('YY-MM-DD-HH-mm-ss')}).json`
     a.click()
     URL.revokeObjectURL(url)
 }
@@ -187,6 +196,21 @@ const fileInput = ref(null)
 // 导入JSON文件
 function uploadJson() {
     fileInput.value.click()
+}
+
+// 全部正确
+function allRightFn() {
+    todayWords.value.forEach(word => {
+        // 排除错误的：plan 为空，且 nextReview 是明天
+        const isWrong = word.plan.length === 0 &&
+            word.nextReview === dayjs().add(1, 'day').format('YYYY-MM-DD')
+
+        if (!isWrong) {
+            markReviewResult(word, true)
+        }
+    })
+
+    ElMessage.success('未出错的单词已全部标记为正确！')
 }
 
 // 处理文件上传
@@ -211,6 +235,29 @@ function handleFile(event) {
         }
     }
     reader.readAsText(file)
+}
+
+// 顺延1天
+function changeAllFn(type) {
+    if (type === 1) {
+        words.value.forEach(word => {
+            word.plan = word.plan.map(date => dayjs(date).add(1, 'day').format('YYYY-MM-DD'))
+            if (word.nextReview) {
+                word.nextReview = dayjs(word.nextReview).add(1, 'day').format('YYYY-MM-DD')
+            }
+        })
+        saveWords()
+        ElMessage.success('所有单词已顺延1天');
+    } else if (type === -1) {
+        words.value.forEach(word => {
+            word.plan = word.plan.map(date => dayjs(date).subtract(1, 'day').format('YYYY-MM-DD'))
+            if (word.nextReview) {
+                word.nextReview = dayjs(word.nextReview).subtract(1, 'day').format('YYYY-MM-DD')
+            }
+        })
+        saveWords()
+        ElMessage.success('所有单词已提前1天');
+    }
 }
 </script>
 
@@ -257,8 +304,8 @@ h2 {
 }
 
 .card:hover {
-    background-color: #f5f7fa;
-    transform: scale(1.02);
+    /* background-color: #f5f7fa; */
+    transform: scale(1.1);
 }
 
 .card strong {
@@ -325,5 +372,9 @@ h2 {
     display: flex;
     justify-content: center;
     gap: 10px;
+}
+
+.wrong {
+    background: #f8b3b7;
 }
 </style>
