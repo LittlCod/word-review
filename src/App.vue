@@ -108,7 +108,7 @@ function addWord() {
     const plan = newWord.firstCorrect ? generatePlan(today) : []
     const nextReview = newWord.firstCorrect
         ? plan[0]
-        : newWord.date.add(1, 'day').format('YYYY-MM-DD')
+        : dayjs(newWord.date).add(1, 'day').format('YYYY-MM-DD')
     words.value.push({
         word: newWord.word,
         meaning: newWord.meaning,
