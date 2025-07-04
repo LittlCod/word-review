@@ -261,7 +261,7 @@ function changeAllFn(type) {
 }
 </script>
 
-<style scoped>
+<style>
 * {
     padding: 0;
     margin: 0;
@@ -279,7 +279,7 @@ h2 {
     max-width: 900px;
     margin: auto;
     padding: 20px;
-    font-family: 'Helvetica Neue', sans-serif;
+    font-family: 'Noto Sans JP', 'Helvetica Neue', sans-serif;
 }
 
 .form {
@@ -376,5 +376,9 @@ h2 {
 
 .wrong {
     background: #f8b3b7;
+}
+
+.el-input input{
+    font-family: 'Noto Sans JP', 'Helvetica Neue', sans-serif;
 }
 </style>
